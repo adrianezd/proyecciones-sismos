@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block contenido %}
+<h1>Cada cuanto tiembla en España</h1>
+<p class="bajada">Cuenta de terremotos registrados en el entorno peninsular, Baleares y Canarias desde {{ desde }}, y cada cuantos años se ha repetido cada magnitud.</p>
+
+<section class="resultado">
+  <p class="resultado-intro">Sismos de magnitud 3 o mas en {{ anios_catalogo }} años</p>
+  <p class="cifrota">{{ total }}</p>
+  <p class="rango">Una media de <strong>{{ por_anio }} al año</strong>.</p>
+</section>
+
+<h2>Cuantos hubo cada año</h2>
+<p class="apunte">Toca una barra para ver el numero exacto. Los picos suelen ser series de replicas de un sismo grande.</p>
+<div id="gr-anios"></div>
+
+<h2>Cada cuanto se repite cada magnitud</h2>
+<p class="apunte">Esto describe lo que ha pasado. No dice cuando sera el siguiente: los terremotos no se predicen.</p>
+<table>
+  <thead><tr><th>Magnitud</th><th>Veces</th><th>Uno cada</th></tr></thead>
+  <tbody>
+  {%- for r in retornos %}
+    <tr><td>{{ r.magnitud }} o mas</td><td>{{ r.cuantos }}</td><td class="destaca">{{ r.cada_anios }} años</td></tr>
+  {%- endfor %}
+  </tbody>
+</table>
+
+<h2>Los diez mayores del periodo</h2>
+<ol class="lista">
+{%- for s in mayores %}
+  <li class="item"><span class="pos"></span><span class="nombre">{{ s.lugar }}</span><span class="valor">{{ s.mag }}</span></li>
+{%- endfor %}
+</ol>
+
+<h2>Por que tiembla en España</h2>
+<p>La peninsula esta cerca del limite entre las placas africana y euroasiatica, que convergen lentamente. La actividad se concentra en el sureste, sobre todo en Granada, Almeria y Murcia, y en los Pirineos. Canarias tiene sismicidad de origen volcanico, distinta en naturaleza. Los terremotos destructivos son raros pero han ocurrido: Lisboa en 1755 y Arenas del Rey en 1884 son los casos historicos de referencia.</p>
+{% endblock %}
+
+{% block fuente %}
+<p>Fuente: catalogo sismico del USGS acotado al entorno de España. Para magnitudes pequeñas el catalogo del IGN es mas completo en territorio español.</p>
+{% endblock %}
+
+{% block script %}
+<script id="datos" type="application/json">{{ datos_json | safe }}</script>
+<script>
+(function(){
+  const D = JSON.parse(document.getElementById("datos").textContent);
+  Grafica.barras("#gr-anios", {
+    datos: D.por_anio.map(a=>({x:a.anio, y:a.cuantos})),
+    formato: v => Grafica.numero(v)+" sismos",
+    titulo: "Sismos por año"
+  });
+})();
+</script>
+{% endblock %}
